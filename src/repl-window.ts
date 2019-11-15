@@ -42,7 +42,7 @@ export function activeReplWindow() {
 }
 
 export function isReplWindowOpen(mode: "clj" | "cljs" = "clj") {
-    // If we find `mode` in the `replWindows` 
+    // If we find `mode` in the `replWindows`
     // dictionary, then it is open.
     if (!replWindows[mode]) {
         return (false);
@@ -184,9 +184,9 @@ class REPLWindow {
     }
 
     reconnect() {
-        // evaluate something that really test 
+        // evaluate something that really test
         // the ability of the connected repl.
-        let res = this.session.eval("(+ 1 1)");
+        let res = this.session.eval("(+ 1 1)", null);
         res.value.then((v) => {
             if (res.ns) {
                 this.ns = res.ns;
@@ -231,7 +231,7 @@ class REPLWindow {
 
         this.interrupt();
 
-        let evaluation = this.session.eval(line, {
+        let evaluation = this.session.eval(line, ns, {
             stderr: m => this.postMessage({ type: "stderr", value: m }),
             stdout: m => this.postMessage({ type: "stdout", value: m }),
             stdin: () => this.getUserInput(),
@@ -461,10 +461,10 @@ export function sendTextToREPLWindow(sessionType: "clj" | "cljs", text: string, 
             if (wnd) {
                 let inNs = ns ? ns : wnd.ns;
                 if (ns && ns !== wnd.ns) {
-                    const requireEvaluation = wnd.session.eval(`(require '${ns})`);
+                    const requireEvaluation = wnd.session.eval(`(require '${ns})`, null);
                     requireEvaluation.value
                         .then((v) => {
-                            const inNSEvaluation = wnd.session.eval(`(in-ns '${ns})`)
+                            const inNSEvaluation = wnd.session.eval(`(in-ns '${ns})`, null) // todo: remove
                             inNSEvaluation.value
                                 .then((v) => {
                                     wnd.setNamespace(inNSEvaluation.ns).then((v) => {
@@ -496,7 +496,7 @@ export async function setREPLNamespace(ns: string, reload = false) {
     }
     let wnd = replWindows[util.getREPLSessionType()];
     if (wnd) {
-        await wnd.session.eval("(in-ns '" + ns + ")").value;
+        await wnd.session.eval("(in-ns '" + ns + ")", ns).value; // Remove? or null?
         wnd.setNamespace(ns).catch(() => { });
     }
 }

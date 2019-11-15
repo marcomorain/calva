@@ -256,7 +256,7 @@ export class NReplSession {
         })
     }
 
-    eval(code: string, opts: { line?: number, column?: number, eval?: string, file?: string, stderr?: (x: string) => void, stdout?: (x: string) => void, stdin?: () => Promise<string>, pprintOptions: PrettyPrintingOptions } = { pprintOptions: disabledPrettyPrinter }) {
+    eval(code: string, ns: string, opts: { line?: number, column?: number, eval?: string, file?: string, stderr?: (x: string) => void, stdout?: (x: string) => void, stdin?: () => Promise<string>, pprintOptions: PrettyPrintingOptions } = { pprintOptions: disabledPrettyPrinter }) {
         const pprintOptions = opts.pprintOptions;
         opts["pprint"] = pprintOptions.enabled;
         delete opts.pprintOptions;
@@ -270,6 +270,7 @@ export class NReplSession {
                     return true;
                 }
             }
+            console.log(opts)
             const opMsg = { op: "eval", session: this.sessionId, code, id, ...extraOpts, ...opts };
             this.addRunningID(id);
             this.client.write(opMsg);
@@ -305,7 +306,7 @@ export class NReplSession {
             stderr?: (x: string) => void,
             stdout?: (x: string) => void,
             pprintOptions: PrettyPrintingOptions
-        } = { 
+        } = {
             pprintOptions: disabledPrettyPrinter
         }) {
 

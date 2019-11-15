@@ -39,7 +39,7 @@ async function connectToHost(hostname, port, connectSequence: ReplConnectSequenc
         nClient.close();
     }
     cljsSession = cljSession = null;
-    
+
     util.setConnectingState(true);
     status.update();
     try {
@@ -81,7 +81,7 @@ async function connectToHost(hostname, port, connectSequence: ReplConnectSequenc
             }
             if (cljsSession) {
                 await setUpCljsRepl(cljsSession, chan, cljsBuild);
-            }  
+            }
             chan.appendLine('cljc files will use the clj REPL.' + (cljsSession ? ' (You can toggle this at will.)' : ''));
         } catch (e) {
             chan.appendLine("Error while connecting cljs REPL: " + e);
@@ -131,7 +131,7 @@ type connectFn = (session: NReplSession, name: string, checkSuccess: checkConnec
 
 async function evalConnectCode(newCljsSession: NReplSession, code: string, name: string, checkSuccess: checkConnectedFn, outputProcessors: processOutputFn[] = [], errorProcessors: processOutputFn[] = []): Promise<boolean> {
     let chan = state.connectionLogChannel();
-    let err = [], out = [], result = await newCljsSession.eval(code, {
+    let err = [], out = [], result = await newCljsSession.eval(code, null, {
         stdout: x => {
             out.push(util.stripAnsi(x));
             chan.append(util.stripAnsi(x));
@@ -293,10 +293,10 @@ function createCLJSReplType(cljsType: CljsTypeConfig, cljsTypeName: string, conn
 
             return evalConnectCode(session, initCode, name, checkFn, [startAppNowProcessor, printThisPrinter], [allPrinter]);
         },
-        connected: (result, out, err) => {            
+        connected: (result, out, err) => {
             if (cljsType.isConnectedRegExp) {
-                return [...out, result].find(x => { 
-                    return x.search(cljsType.isConnectedRegExp) >= 0 
+                return [...out, result].find(x => {
+                    return x.search(cljsType.isConnectedRegExp) >= 0
                 }) != undefined;
             } else {
                 return true;
@@ -512,7 +512,7 @@ export default {
         status.update();
 
         if(nClient) {
-            // the connection may be ended before 
+            // the connection may be ended before
             // the REPL client was connected.
             nClient.close();
         }

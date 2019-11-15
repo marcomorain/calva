@@ -59,6 +59,9 @@ async function evaluateSelection(document, options) {
             codeSelection: vscode.Selection = null,
             code = "";
 
+
+        console.log(doc)
+
         if (selection.isEmpty) {
             state.analytics().logEvent("Evaluation", topLevel ? "TopLevel" : "CurrentForm").send();
             codeSelection = select.getFormSelection(doc, selection.active, topLevel);
@@ -75,13 +78,14 @@ async function evaluateSelection(document, options) {
 
             let err: string[] = [], out: string[] = [];
 
-            let res = await client.eval("(in-ns '" + util.getNamespace(doc) + ")").value;
+            //let res = await client.eval("(in-ns '" + util.getNamespace(doc) + ")").value;
 
             try {
                 const line = codeSelection.start.line,
                     column = codeSelection.start.character,
                     filePath = doc.fileName,
-                    context = client.eval(code, {
+                    context = client.eval(code,
+                        util.getNamespace(doc), {
                         file: filePath,
                         line: line + 1,
                         column: column + 1,
@@ -159,6 +163,9 @@ function evaluateTopLevelFormAsComment(document = {}, options = {}) {
 }
 
 function evaluateTopLevelForm(document = {}, options = {}) {
+    console.log("marc says hi");
+    console.log(document);
+    console.log({"a": 1})
     evaluateSelection(document, Object.assign({}, options, { topLevel: true, pprintOptions: state.config().prettyPrintingOptions }))
         .catch(e => console.warn(`Unhandled error: ${e.message}`));
 }
@@ -215,8 +222,8 @@ async function requireREPLUtilitiesCommand() {
         if (session) {
             try {
                 await util.createNamespaceFromDocumentIfNotExists(util.getDocument({}));
-                await session.eval("(in-ns '" + ns + ")").value;
-                await session.eval(form).value;
+                //await session.eval("(in-ns '" + ns + ")").value;
+                await session.eval(form, ns).value;
                 chan.appendLine(`REPL utilities are now available in namespace ${ns}.`);
             } catch (e) {
                 chan.appendLine(`REPL utilities could not be acquired for namespace ${ns}: ${e}`);
@@ -232,7 +239,7 @@ async function copyLastResultCommand() {
     const replWindow = activeReplWindow();
     let client = replWindow ? replWindow.session : util.getSession(util.getFileType(util.getDocument({})));
 
-    let value = await client.eval("*1").value;
+    let value = await client.eval("*1", null).value;
     if (value !== null) {
         vscode.env.clipboard.writeText(value);
         vscode.window.showInformationMessage("Results copied to the clipboard.");

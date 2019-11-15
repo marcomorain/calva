@@ -26,7 +26,7 @@ vscode.tasks.onDidEndTask(((e) => {
     if(e.execution.task.name == TASK_NAME) {
        JackinExecution = undefined;
        connector.default.disconnect();
-       // make sure everything is set back 
+       // make sure everything is set back
        // even if the task failed to connect
        // to the repl server.
        utilities.setLaunchingState(null);
@@ -36,7 +36,7 @@ vscode.tasks.onDidEndTask(((e) => {
 
 function cancelJackInTask() {
     setTimeout(() => {
-        calvaJackout(); 
+        calvaJackout();
     }, 1000);
 }
 
@@ -76,7 +76,7 @@ async function executeJackInTask(projectType: projectTypes.ProjectType, projectT
         }
 
         if(!fs.existsSync(portFileDir)) {
-            // try to make the directory to allow the 
+            // try to make the directory to allow the
             // started process to catch up.
             fs.mkdirSync(portFileDir);
         }
@@ -118,18 +118,18 @@ async function executeJackInTask(projectType: projectTypes.ProjectType, projectT
 export function calvaJackout() {
     if (JackinExecution != undefined) {
         if (projectTypes.isWin) {
-            // this is a hack under Windows to terminate the 
-            // repl process from the repl client because the 
-            // ShellExecution under Windows will not terminate 
+            // this is a hack under Windows to terminate the
+            // repl process from the repl client because the
+            // ShellExecution under Windows will not terminate
             // all child processes.
             //
-            // the clojure code to terminate the repl process 
+            // the clojure code to terminate the repl process
             // was taken from this comment on github:
             //
             // https://github.com/clojure-emacs/cider/issues/390#issuecomment-317791387
             //
             if (nClient && nClient.session) {
-                nClient.session.eval("(do (.start (Thread. (fn [] (Thread/sleep 5000) (shutdown-agents) (System/exit 0)))) nil)");
+                nClient.session.eval("(do (.start (Thread. (fn [] (Thread/sleep 5000) (shutdown-agents) (System/exit 0)))) nil)", null);
             }
         }
         JackinExecution.terminate();
@@ -147,13 +147,13 @@ export async function calvaJackIn() {
 
     const cljTypes = await projectTypes.detectProjectTypes();
     const projectConnectSequence: ReplConnectSequence = await askForConnectSequence(cljTypes, 'jack-in-type', "JackInInterrupted");
-    
+
     if (!projectConnectSequence) {
         state.analytics().logEvent("REPL", "JackInInterrupted", "NoProjectTypeForBuildName").send();
         outputChannel.appendLine("Aborting Jack-in, since no project typee was selected.");
         return;
     }
-    
+
     outputChannel.appendLine("Jacking in...");
 
     const projectTypeName: string = projectConnectSequence.projectType;
@@ -213,7 +213,7 @@ export async function calvaJackInOrConnect() {
         commands["Connect to a running REPL server in your project"] = "calva.connect";
         commands["Connect to a running REPL server, not in your project"] = "calva.connectNonProjectREPL";
     } else {
-        // if connected add the disconnect command and the 
+        // if connected add the disconnect command and the
         // REPL window open commands if needed.
         commands["Disconnect from the REPL server"] = "calva.disconnect";
         if(utilities.getSession("clj")) {
@@ -222,7 +222,7 @@ export async function calvaJackInOrConnect() {
             } else {
                 commands["Clear Clojure REPL Window + History"] = "calva.clearClojureREPLWindow";
             }
-            
+
         }
         if(utilities.getSession("cljs"))  {
             if (!isReplWindowOpen("cljs")) {
@@ -239,5 +239,3 @@ export async function calvaJackInOrConnect() {
         }
     })
 }
-
-
